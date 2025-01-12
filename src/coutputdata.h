@@ -17,6 +17,7 @@ public:
     std::string device_name;
 
     uint32_t exportCounter = 0;
+    std::string filename;
 
     //
     uint32_t payload_index = 0;

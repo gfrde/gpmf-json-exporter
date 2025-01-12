@@ -37,8 +37,12 @@ std::string COutputData::buildJsonString()
     toWrite.append("\"devc\":{").append(R"("id":")").append(device_id).append("\",").append(R"("name":")").append(device_name).append("\"");
     toWrite.append("}");
     toWrite.append(",\"meta\":{");
-    toWrite.append(R"("timestamp":)").append(std::to_string(timestamp));
-    toWrite.append(R"(,"st_name":")").append(st_name).append("\"");
+    toWrite.append(R"("st_name":")").append(st_name).append("\"");
+    if (!filename.empty())
+    {
+        toWrite.append(R"(,"filename":")").append(filename).append("\"");
+    }
+    toWrite.append(R"(,"timestamp":)").append(std::to_string(timestamp));
     if (!st_type.empty())
     {
         toWrite.append(R"(,"st_type":")").append(st_type).append("\"");

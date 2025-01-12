@@ -17,6 +17,7 @@ uint32_t show_info = false;
 bool show_json = false;
 bool json_as_stream = false;
 bool json_with_array = false;
+bool json_with_filename = false;
 
 #define PRINT_DEBUG if (show_debug) printf
 #define PRINT_INFO if (show_info) printf
@@ -67,7 +68,7 @@ std::string create_json_element(const std::string& attr, const std::string& v)
 }
 
 
-GPMF_ERR readMP4File(char* filename)
+GPMF_ERR readMP4File(char* filename, bool export_filename)
 {
     GPMF_ERR ret = GPMF_OK;
     GPMF_stream metadata_stream = { 0 }, * ms = &metadata_stream;
@@ -93,6 +94,10 @@ GPMF_ERR readMP4File(char* filename)
     if (metadatalength > 0.0)
     {
         COutputData output_data;
+        if (export_filename)
+        {
+            output_data.filename = filename;
+        }
         if (json_with_array)
         {
             std::cout << "[" << std::endl;
@@ -633,6 +638,7 @@ void printHelp(char* name)
     // printf("       -c - %s computed sample rates\n", SHOW_COMPUTED_SAMPLERATES ? "disable" : "show");
     // printf("       -v - %s video framerate\n", SHOW_VIDEO_FRAMERATE ? "disable" : "show");
     // printf("       -t - %s time of the payload\n", SHOW_PAYLOAD_TIME ? "disable" : "show");
+    printf("       -f - filename as part of output - current=%s\n", !json_with_filename ? "disabled" : "showing");
     printf("       -j - write json to console - current=%s\n", !show_json ? "disabled" : "showing");
     printf("       -js - json as stream (without comma) - current=%s\n", !json_as_stream ? "disabled" : "showing");
     printf("       -ja - json with array braces - current=%s\n", !json_with_array ? "disabled" : "showing");
@@ -652,6 +658,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+
     for (int i = 1; i < argc; i++)
     {
         if (argv[i][0] == '-') //feature switches
@@ -664,6 +671,7 @@ int main(int argc, char* argv[])
                     if (show_debug)  show_info = true;
                 }
                 break;
+            case 'f': json_with_filename = !json_with_filename;	  break;
             case 'j':
                 {
                     switch (argv[i][2])
@@ -689,6 +697,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    GPMF_ERR ret = readMP4File(argv[1]);
+    GPMF_ERR ret = readMP4File(argv[1], json_with_filename);
     return 0;
 }
