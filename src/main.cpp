@@ -697,6 +697,12 @@ int main(int argc, char* argv[])
         }
     }
 
-    GPMF_ERR ret = readMP4File(argv[1], json_with_filename);
-    return 0;
+    if (GPMF_ERR ret = readMP4File(argv[1], json_with_filename); ret != GPMF_OK)
+    {
+        return 0;
+    }
+    else
+    {
+        return -1;
+    }
 }
