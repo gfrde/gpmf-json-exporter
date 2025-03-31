@@ -14,6 +14,7 @@
 uint32_t load_meta = false;
 uint32_t show_debug = false;
 uint32_t show_info = false;
+uint32_t only_second = -1;
 bool show_json = false;
 bool json_as_stream = false;
 bool json_with_array = false;
@@ -140,6 +141,20 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
             {
                 printf("initialization of struct failed");
                 break;
+            }
+
+            if (only_second != -1 )
+            {
+                if (only_second != index)
+                {
+                    ret = GPMF_Next(ms, (GPMF_LEVELS)(GPMF_RECURSE_LEVELS | GPMF_TOLERANT));
+                    if (GPMF_OK != ret)
+                    {
+                        printf("next() failed - stopping");
+                        break;
+                    }
+                    continue;
+                }
             }
 
             uint32_t key;
@@ -672,6 +687,13 @@ int main(int argc, char* argv[])
                 }
                 break;
             case 'f': json_with_filename = !json_with_filename;	  break;
+            case 's':
+                {
+                    i ++;
+                    only_second = atol(argv[i]);
+                    printf("using explicit second to export: %d\n", only_second);
+                }
+                break;
             case 'j':
                 {
                     switch (argv[i][2])
@@ -703,6 +725,6 @@ int main(int argc, char* argv[])
     }
     else
     {
-        return -1;
+        return 0;
     }
 }
