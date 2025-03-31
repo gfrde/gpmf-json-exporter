@@ -23,7 +23,7 @@ public:
     uint32_t payload_index = 0;
     double payload_in = -1.0;
     double payload_out = -1.0;
-    uint64_t timestamp;
+    int64_t timestamp;  // micro seconds since video start
     std::string stmp;
     std::string st_name;
     std::string st_type;
