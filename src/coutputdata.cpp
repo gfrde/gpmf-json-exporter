@@ -4,6 +4,9 @@
 
 #include "coutputdata.h"
 
+#include <ostream>
+#include "helper_functions.h"
+
 extern bool json_as_stream;
 extern bool json_with_array;
 
@@ -19,21 +22,49 @@ void COutputData::reset_volatile()
     payload_out = -1.0;
 }
 
-void COutputData::addExportData(const std::string& s)
+void COutputData::addExportData(const std::string& key, const std::string& s, bool isJson)
 {
-    export_data.push_back(s);
+    // export_data.push_back(s);#
+    std::string s1 = s;
+    if (isJson)
+    {
+        export_data[key] = s;
+    }
+    else
+    {
+        export_data[key] = "\"" + s + "\"";
+    }
 }
 
-std::string COutputData::buildJsonString()
+void COutputData::addExportData(const std::string& key, const uint64_t& s)
 {
-    exportCounter ++;
+    // export_data.push_back(s);
+    export_data[key] = std::to_string(s);
+}
+void COutputData::addExportData(const std::string& key, const int64_t& s)
+{
+    // export_data.push_back(s);
+    export_data[key] = std::to_string(s);
+}
+void COutputData::addExportData(const std::string& key, const uint32_t& s)
+{
+    // export_data.push_back(s);
+    export_data[key] = std::to_string(s);
+}
+void COutputData::addExportData(const std::string& key, const int32_t& s)
+{
+    // export_data.push_back(s);
+    export_data[key] = std::to_string(s);
+}
+void COutputData::addExportData(const std::string& key, const double& s)
+{
+    // export_data.push_back(s);
+    export_data[key] = std::to_string(s);
+}
 
+std::string COutputData::buildJsonPart(int64_t timestamp, double frame_pos) const
+{
     std::string toWrite;
-    if (!json_as_stream && (!json_with_array || exportCounter > 1))
-    {
-        toWrite.append(",");
-    }
-    toWrite.append("{");
 
     toWrite.append("\"static\":{");
     toWrite.append(R"("devid":")").append(device_id).append("\"");
@@ -47,6 +78,10 @@ std::string COutputData::buildJsonString()
     toWrite.append(",\"meta\":{");
     toWrite.append(R"("st_name":")").append(st_name).append("\"");
     toWrite.append(R"(,"timestamp":)").append(std::to_string(timestamp));
+    if (frame_pos > 0)
+    {
+        toWrite.append(R"(,"frame":)").append(std::to_string(frame_pos));
+    }
     if (!st_type.empty())
     {
         toWrite.append(R"(,"st_type":")").append(st_type).append("\"");
@@ -61,18 +96,69 @@ std::string COutputData::buildJsonString()
         toWrite.append(R"(,"time_out":")").append(std::to_string(payload_out)).append("\"");
     }
     toWrite.append("}");
-    toWrite.append(",\"data\":[");
-    uint32_t p=0;
-    for (const auto &s: export_data)
+
+    return toWrite;
+}
+
+std::string COutputData::buildJsonString()
+{
+    std::string toWrite;
+    if (this->split_data)
     {
-        if (p>0) toWrite.append(",");
-        p++;
-        toWrite.append(s);
+        double timestep = (payload_out - payload_in) / export_data.size();
+        int step = -1;
+        for (const auto &s: export_data)
+        {
+            step ++;
+
+            exportCounter ++;
+
+            if (!json_as_stream && (!json_with_array || exportCounter > 1))
+            {
+                toWrite.append(",");
+            }
+            toWrite.append("{");
+
+            if (frames_per_sec > 0 )
+            {
+                double t = timestamp + step*timestep;
+                toWrite.append(this->buildJsonPart(static_cast<int64_t>(t), t / frames_per_sec));
+            } else
+            {
+                toWrite.append(this->buildJsonPart(static_cast<int64_t>(timestamp + step*timestep)));
+            }
+
+            toWrite.append(",\"data\":");
+            toWrite.append(create_json_element(s.first, s.second));
+            // toWrite.append(s);
+            toWrite.append("}");
+            toWrite.append("\n");
+        }
+    } else
+    {
+        exportCounter ++;
+
+        if (!json_as_stream && (!json_with_array || exportCounter > 1))
+        {
+            toWrite.append(",");
+        }
+        toWrite.append("{");
+
+        toWrite.append(this->buildJsonPart(timestamp));
+
+        toWrite.append(",\"data\":[");
+        uint32_t p=0;
+        for (const auto &s: export_data)
+        {
+            if (p>0) toWrite.append(",");
+            p++;
+            toWrite.append(create_json_element(s.first, s.second));
+            // toWrite.append(s);
+        }
+
+        toWrite.append("]");
+        toWrite.append("}");
     }
-
-    toWrite.append("]");
-    toWrite.append("}");
-
     return toWrite;
 }
 

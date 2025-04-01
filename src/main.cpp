@@ -10,6 +10,7 @@
 #include "demo/GPMF_mp4reader.h"
 
 #include "coutputdata.h"
+#include "helper_functions.h"
 
 uint32_t load_meta = false;
 uint32_t show_debug = false;
@@ -19,54 +20,12 @@ bool show_json = false;
 bool json_as_stream = false;
 bool json_with_array = false;
 bool json_with_filename = false;
+bool split_data = false;
 
 #define PRINT_DEBUG if (show_debug) printf
 #define PRINT_INFO if (show_info) printf
 
 
-
-std::string convert_key_to_string(uint32_t key)
-{
-    char buf[10];
-    sprintf(buf, "%c%c%c%c", PRINTF_4CC(key));
-
-    return (buf);
-}
-
-std::string create_json_string(const std::string& attr, uint64_t v)
-{
-    return "{\"" + attr + "\":" + std::to_string(v) + "}";
-}
-
-std::string create_json_string(const std::string& attr, int64_t v)
-{
-    return "{\"" + attr + "\":" + std::to_string(v) + "}";
-}
-
-std::string create_json_string(const std::string& attr, uint32_t v)
-{
-    return "{\"" + attr + "\":" + std::to_string(v) + "}";
-}
-
-std::string create_json_string(const std::string& attr, int32_t v)
-{
-    return "{\"" + attr + "\":" + std::to_string(v) + "}";
-}
-
-std::string create_json_string(const std::string& attr, double v)
-{
-    return "{\"" + attr + "\":" + std::to_string(v) + "}";
-}
-
-std::string create_json_string(const std::string& attr, const std::string& v)
-{
-    return "{\"" + attr + "\":\"" + v + "\"}";
-}
-
-std::string create_json_element(const std::string& attr, const std::string& v)
-{
-    return "{\"" + attr + "\":" + v + "}";
-}
 
 
 GPMF_ERR readMP4File(char* filename, bool export_filename)
@@ -99,10 +58,13 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
         {
             output_data.filename = filename;
         }
+        output_data.split_data = split_data;
+
         if (json_with_array)
         {
             std::cout << "[" << std::endl;
         }
+
 
 
         uint32_t payloads = GetNumberPayloads(mp4handle);
@@ -276,9 +238,9 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                     else
                     {
                         if (single_string)
-                            output_data.addExportData(create_json_string(convert_key_to_string(key), s));
+                            output_data.addExportData(convert_key_to_string(key), s);
                         else
-                            output_data.addExportData(create_json_element(convert_key_to_string(key), s));
+                            output_data.addExportData(convert_key_to_string(key), s, true);
                     }
 
                 }
@@ -293,7 +255,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                     }
                     else
                     {
-                        output_data.addExportData(create_json_string(convert_key_to_string(key), s));
+                        output_data.addExportData(convert_key_to_string(key), s);
                     }
 
                 }
@@ -314,7 +276,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                     }
                     else
                     {
-                        output_data.addExportData(create_json_string(convert_key_to_string(key), reinterpret_cast<int64_t>(BYTESWAP64(*j))));
+                        output_data.addExportData(convert_key_to_string(key), reinterpret_cast<int64_t>(BYTESWAP64(*j)));
                     }
                 }
                 else if (type == GPMF_TYPE_UNSIGNED_64BIT_INT)
@@ -328,7 +290,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                     }
                     else
                     {
-                        output_data.addExportData(create_json_string(convert_key_to_string(key), reinterpret_cast<uint64_t>(BYTESWAP64(*j))));
+                        output_data.addExportData(convert_key_to_string(key), reinterpret_cast<uint64_t>(BYTESWAP64(*j)));
                     }
                 }
                 else if (type == GPMF_TYPE_SIGNED_LONG || type == GPMF_TYPE_SIGNED_SHORT || type == GPMF_TYPE_SIGNED_BYTE)
@@ -359,7 +321,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                         {
                             if (num == 1)
                             {
-                                output_data.addExportData(create_json_string(convert_key_to_string(key), f[0]));
+                                output_data.addExportData(convert_key_to_string(key), f[0]);
                             }
                             else
                             {
@@ -379,7 +341,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                                 }
                                 s.append("]");
 
-                                output_data.addExportData(create_json_element(convert_key_to_string(key), s));
+                                output_data.addExportData(convert_key_to_string(key), s, true);
                             }
                         }
                     }
@@ -420,7 +382,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                             {
                                 if (num == 1)
                                 {
-                                    output_data.addExportData(create_json_string(convert_key_to_string(key), f[0]));
+                                    output_data.addExportData(convert_key_to_string(key), f[0]);
                                 }
                                 else
                                 {
@@ -440,7 +402,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                                     }
                                     s.append("]");
 
-                                    output_data.addExportData(create_json_element(convert_key_to_string(key), s));
+                                    output_data.addExportData(convert_key_to_string(key), s, true);
                                 }
                             }
                         }
@@ -469,7 +431,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
 
                         if (num == 1)
                         {
-                            output_data.addExportData(create_json_string(convert_key_to_string(key), f[0]));
+                            output_data.addExportData(convert_key_to_string(key), f[0]);
                         }
                         else
                         {
@@ -488,7 +450,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                                 s.append("]");
                             }
                             s.append("]");
-                            output_data.addExportData(create_json_element(convert_key_to_string(key), s));
+                            output_data.addExportData(convert_key_to_string(key), s, true);
                         }
                     }
                     else
@@ -499,7 +461,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                 else if (type == GPMF_TYPE_UTC_DATE_TIME)
                 {
                     std::string s;
-                    s.append("\"20");
+                    s.append("20");
                     uint32_t p = 0;
                     s.append(1, data[p++]);
                     s.append(1, data[p++]);
@@ -522,9 +484,8 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                     s.append(1, data[p++]);
                     s.append(1, data[p++]);
                     s.append(1, data[p++]);
-                    s.append("\"");
 
-                    output_data.addExportData(create_json_element(convert_key_to_string(key), s));
+                    output_data.addExportData(convert_key_to_string(key), s);
                 }
                 else if (type == GPMF_TYPE_COMPLEX)
                 {
@@ -592,7 +553,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                         }
                         s.append("]");
 
-                        output_data.addExportData(create_json_element(convert_key_to_string(key), s));
+                        output_data.addExportData(convert_key_to_string(key), s, true);
                     }
                     else
                     {
@@ -687,6 +648,7 @@ int main(int argc, char* argv[])
                 }
                 break;
             case 'f': json_with_filename = !json_with_filename;	  break;
+            case 'u': split_data = !split_data;	  break;
             case 's':
                 {
                     i ++;
