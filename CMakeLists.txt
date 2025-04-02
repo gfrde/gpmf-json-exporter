@@ -18,6 +18,8 @@ add_executable(GPMF_EXPORTER_BIN ${EXPORTER_SOURCES}
         src/coutputdata.h
         src/helper_functions.cpp
         src/helper_functions.h
+        src/CValue.cpp
+        src/CValue.h
 )
 set_target_properties(GPMF_EXPORTER_BIN PROPERTIES OUTPUT_NAME "${PROJECT_NAME}")
 target_link_libraries( GPMF_EXPORTER_BIN GPMF_PARSER_LIB )
