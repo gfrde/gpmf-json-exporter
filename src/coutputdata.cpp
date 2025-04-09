@@ -32,38 +32,45 @@ void COutputData::addExportData(const std::string& key, const std::string& s, bo
     std::string s1 = s;
     if (isJson)
     {
-        export_data[key] = s;
+        // export_data[key] = s;
+        export_data[key] = new CStringValue(s);
     }
     else
     {
-        export_data[key] = "\"" + s + "\"";
+        // export_data[key] = "\"" + s + "\"";
+        export_data[key] = new CStringValue("\"" + s + "\"");
     }
 }
 
 void COutputData::addExportData(const std::string& key, const uint64_t& s)
 {
     // export_data.push_back(s);
-    export_data[key] = std::to_string(s);
+    // export_data[key] = std::to_string(s);
+    export_data[key] = new CLongLongValue(s);
 }
 void COutputData::addExportData(const std::string& key, const int64_t& s)
 {
     // export_data.push_back(s);
-    export_data[key] = std::to_string(s);
+    // export_data[key] = std::to_string(s);
+    export_data[key] = new CLongLongValue(s);
 }
 void COutputData::addExportData(const std::string& key, const uint32_t& s)
 {
     // export_data.push_back(s);
-    export_data[key] = std::to_string(s);
+    // export_data[key] = std::to_string(s);
+    export_data[key] = new CLongValue(s);
 }
 void COutputData::addExportData(const std::string& key, const int32_t& s)
 {
     // export_data.push_back(s);
-    export_data[key] = std::to_string(s);
+    // export_data[key] = std::to_string(s);
+    export_data[key] = new CLongValue(s);
 }
 void COutputData::addExportData(const std::string& key, const double& s)
 {
     // export_data.push_back(s);
-    export_data[key] = std::to_string(s);
+    // export_data[key] = std::to_string(s);
+    export_data[key] = new CDoubleValue(s);
 }
 
 std::string COutputData::buildJsonPart(int64_t timestamp, double frame_pos) const
@@ -145,7 +152,7 @@ std::string COutputData::buildJsonString()
             }
 
             toWrite.append(",\"data\":");
-            toWrite.append(create_json_element(s.first, s.second));
+            toWrite.append(create_json_element(s.first, s.second->getAsJsonValue()));
             // toWrite.append(s);
             toWrite.append("}");
             toWrite.append("\n");
@@ -172,7 +179,7 @@ std::string COutputData::buildJsonString()
             }
             if (p>0) toWrite.append(",");
             p++;
-            toWrite.append(create_json_element(s.first, s.second));
+            toWrite.append(create_json_element(s.first, s.second->getAsJsonValue()));
             // toWrite.append(s);
         }
 

@@ -10,7 +10,7 @@
 // ********************************************************************************************************************
 std::string CValue::getAsJsonValue() const
 {
-    return "";
+    return "???";
 }
 
 
@@ -25,7 +25,8 @@ CStringValue::CStringValue(std::string v)
 
 std::string CStringValue::getAsJsonValue() const
 {
-    return "\"" + value + "\"";
+    return value;
+    // return "\"" + value + "\"";
 }
 
 // ********************************************************************************************************************
@@ -35,6 +36,17 @@ CLongValue::CLongValue(long v)
 }
 
 std::string CLongValue::getAsJsonValue() const
+{
+    return std::to_string(value);
+}
+
+// ********************************************************************************************************************
+CLongLongValue::CLongLongValue(long long v)
+{
+    this->value = v;
+}
+
+std::string CLongLongValue::getAsJsonValue() const
 {
     return std::to_string(value);
 }

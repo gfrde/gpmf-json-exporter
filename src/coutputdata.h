@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "CValue.h"
 
 
 class COutputData
@@ -29,7 +30,8 @@ public:
     std::string st_name;
     std::string st_type;
     // std::vector<std::string> export_data;
-    std::map<std::string, std::string> export_data;
+    // std::map<std::string, std::string> export_data;
+    std::map<std::string, CValue*> export_data;
 
     bool split_data = false;
     double frames_per_sec=-1;
