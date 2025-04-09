@@ -5,10 +5,14 @@
 #include "coutputdata.h"
 
 #include <ostream>
+#include <set>
+
 #include "helper_functions.h"
 
 extern bool json_as_stream;
 extern bool json_with_array;
+extern std::set<std::string> ignoreTypes;
+
 
 void COutputData::reset_volatile()
 {
@@ -82,10 +86,10 @@ std::string COutputData::buildJsonPart(int64_t timestamp, double frame_pos) cons
     {
         toWrite.append(R"(,"frame":)").append(std::to_string(frame_pos));
     }
-    if (!st_type.empty())
-    {
-        toWrite.append(R"(,"st_type":")").append(st_type).append("\"");
-    }
+    // if (!st_type.empty())
+    // {
+    //     toWrite.append(R"(,"st_type":")").append(st_type).append("\"");
+    // }
     toWrite.append(R"(,"index":")").append(std::to_string(payload_index)).append("\"");
     if (payload_in >= 0)
     {
@@ -107,8 +111,20 @@ std::string COutputData::buildJsonString()
     {
         double timestep = (payload_out - payload_in) / export_data.size();
         int step = -1;
+
+        // first check, if there any of the entries needs to be exploded
         for (const auto &s: export_data)
         {
+
+        }
+
+        //
+        for (const auto &s: export_data)
+        {
+            if (ignoreTypes.find(s.first) != ignoreTypes.end())
+            {
+                continue;
+            }
             step ++;
 
             exportCounter ++;
@@ -150,6 +166,10 @@ std::string COutputData::buildJsonString()
         uint32_t p=0;
         for (const auto &s: export_data)
         {
+            if (ignoreTypes.find(s.first) != ignoreTypes.end())
+            {
+                continue;
+            }
             if (p>0) toWrite.append(",");
             p++;
             toWrite.append(create_json_element(s.first, s.second));

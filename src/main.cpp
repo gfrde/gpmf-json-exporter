@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <iostream>
 #include <algorithm>
+#include <set>
 
 #include "GPMF_parser.h"
 #include "demo/GPMF_mp4reader.h"
@@ -21,6 +22,7 @@ bool json_as_stream = false;
 bool json_with_array = false;
 bool json_with_filename = false;
 bool split_data = false;
+std::set<std::string> ignoreTypes;
 
 #define PRINT_DEBUG if (show_debug) printf
 #define PRINT_INFO if (show_info) printf
@@ -654,6 +656,12 @@ int main(int argc, char* argv[])
                     i ++;
                     only_second = atol(argv[i]);
                     printf("using explicit second to export: %d\n", only_second);
+                }
+                break;
+            case 'i':
+                {
+                    i ++;
+                    ignoreTypes.insert(argv[i]);
                 }
                 break;
             case 'j':
