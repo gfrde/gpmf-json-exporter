@@ -31,7 +31,7 @@ public:
     std::string st_type;
     // std::vector<std::string> export_data;
     // std::map<std::string, std::string> export_data;
-    std::map<std::string, CValue*> export_data;
+    std::map<std::string, std::unique_ptr<const CValue> > export_data;
 
     bool split_data = false;
     double frames_per_sec=-1;
@@ -44,6 +44,7 @@ public:
     void addExportData(const std::string& key, const uint32_t& s);
     void addExportData(const std::string& key, const int32_t& s);
     void addExportData(const std::string& key, const double& s);
+    void addExportData(const std::string& key, std::unique_ptr<const CValue> value);
 
     // void addExportData(const std::string& s);
     std::string buildJsonString();

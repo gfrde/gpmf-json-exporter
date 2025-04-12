@@ -26,6 +26,13 @@ void COutputData::reset_volatile()
     payload_out = -1.0;
 }
 
+void COutputData::addExportData(const std::string& key, std::unique_ptr<const CValue> value)
+{
+    export_data[key] = std::move(value);
+    // export_data.insert(std::pair<std::string, std::unique_ptr<const CValue> >(key, value));
+}
+
+
 void COutputData::addExportData(const std::string& key, const std::string& s, bool isJson)
 {
     // export_data.push_back(s);#
@@ -33,12 +40,12 @@ void COutputData::addExportData(const std::string& key, const std::string& s, bo
     if (isJson)
     {
         // export_data[key] = s;
-        export_data[key] = new CStringValue(s);
+        export_data[key] = std::make_unique<CStringValue>(s);
     }
     else
     {
         // export_data[key] = "\"" + s + "\"";
-        export_data[key] = new CStringValue("\"" + s + "\"");
+        export_data[key] = std::make_unique<CStringValue>("\"" + s + "\"");
     }
 }
 
@@ -46,31 +53,31 @@ void COutputData::addExportData(const std::string& key, const uint64_t& s)
 {
     // export_data.push_back(s);
     // export_data[key] = std::to_string(s);
-    export_data[key] = new CLongLongValue(s);
+    export_data[key] = std::make_unique<CLongLongValue>(s);
 }
 void COutputData::addExportData(const std::string& key, const int64_t& s)
 {
     // export_data.push_back(s);
     // export_data[key] = std::to_string(s);
-    export_data[key] = new CLongLongValue(s);
+    export_data[key] = std::make_unique<CLongLongValue>(s);
 }
 void COutputData::addExportData(const std::string& key, const uint32_t& s)
 {
     // export_data.push_back(s);
     // export_data[key] = std::to_string(s);
-    export_data[key] = new CLongValue(s);
+    export_data[key] = std::make_unique<CLongValue>(s);
 }
 void COutputData::addExportData(const std::string& key, const int32_t& s)
 {
     // export_data.push_back(s);
     // export_data[key] = std::to_string(s);
-    export_data[key] = new CLongValue(s);
+    export_data[key] = std::make_unique<CLongValue>(s);
 }
 void COutputData::addExportData(const std::string& key, const double& s)
 {
     // export_data.push_back(s);
     // export_data[key] = std::to_string(s);
-    export_data[key] = new CDoubleValue(s);
+    export_data[key] = std::make_unique<CDoubleValue>(s);
 }
 
 std::string COutputData::buildJsonPart(int64_t timestamp, double frame_pos) const

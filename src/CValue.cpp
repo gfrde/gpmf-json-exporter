@@ -18,15 +18,23 @@ std::string CValue::getAsJsonValue() const
 
 // ********************************************************************************************************************
 
-CStringValue::CStringValue(std::string v)
+CStringValue::CStringValue(std::string v, bool useRaw)
 {
     this->value = std::move(v);
+    this->useRaw = useRaw;
 }
 
 std::string CStringValue::getAsJsonValue() const
 {
-    return value;
-    // return "\"" + value + "\"";
+    // return value;
+    if (useRaw)
+    {
+        return value;
+    }
+    else
+    {
+        return "\"" + value + "\"";
+    }
 }
 
 // ********************************************************************************************************************
@@ -71,20 +79,20 @@ std::string CListValue::getAsJsonValue() const
 {
     int pos = 0;
     std::string res = "[";
-    for (auto v : value)
+    for (auto && v : value)
     {
-        if (pos == 0)
+        if (pos != 0)
         {
             res += ",";
         }
-        res += v.getAsJsonValue();;
+        res += v->getAsJsonValue();;
         pos++;
     }
     res += "]";
     return res;
 }
 
-void CListValue::addValue(CValue v)
+void CListValue::addValue(std::unique_ptr<const CValue> v)
 {
     value.push_back(std::move(v));
 }

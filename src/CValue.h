@@ -5,6 +5,7 @@
 #ifndef CVALUE_H
 #define CVALUE_H
 #include <list>
+#include <memory>
 #include <string>
 
 
@@ -15,11 +16,12 @@ public:
 
 class CStringValue : public CValue {
 public:
-    explicit CStringValue(std::string v);
+    explicit CStringValue(std::string v, bool useRaw=false);
     std::string getAsJsonValue() const override;
 
 public:
     std::string value;
+    bool useRaw;
 };
 
 class CLongValue : public CValue {
@@ -53,10 +55,10 @@ class CListValue : public CValue {
 public:
     explicit CListValue();
     std::string getAsJsonValue() const override;
-    void addValue(CValue v);
+    void addValue(std::unique_ptr<const CValue> v);
 
 public:
-    std::list<CValue> value;
+    std::list<std::unique_ptr<const CValue>> value;
 };
 
 

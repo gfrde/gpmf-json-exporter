@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <iostream>
 #include <algorithm>
+#include <memory>
 #include <set>
 
 #include "GPMF_parser.h"
@@ -239,10 +240,11 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                     }
                     else
                     {
-                        if (single_string)
-                            output_data.addExportData(convert_key_to_string(key), s);
-                        else
-                            output_data.addExportData(convert_key_to_string(key), s, true);
+                        output_data.addExportData(convert_key_to_string(key), std::make_unique<CStringValue>(s, !single_string));
+                        // if (single_string)
+                            // output_data.addExportData(convert_key_to_string(key), s);
+                        // else
+                            // output_data.addExportData(convert_key_to_string(key), s, true);
                     }
 
                 }
@@ -257,7 +259,8 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                     }
                     else
                     {
-                        output_data.addExportData(convert_key_to_string(key), s);
+                        // output_data.addExportData(convert_key_to_string(key), s);
+                        output_data.addExportData(convert_key_to_string(key), std::make_unique<CStringValue>(s));
                     }
 
                 }
@@ -330,20 +333,25 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                                 uint32_t p = 0;
                                 std::string s;
                                 s.append("[");
+                                auto listing = new CListValue();
                                 for (uint32_t i=0; i<samples; i++)
                                 {
                                     if (i>0) s.append(",");
                                     s.append("[");
+                                    auto sub = new CListValue();
                                     for (uint32_t j=0; j<elements; j++)
                                     {
                                         if (j>0) s.append(",");
                                         s.append(std::to_string(f[p++]));
+                                        sub->addValue(std::make_unique<CLongValue>(f[p++]));
                                     }
+                                    listing->addValue(std::unique_ptr<const CValue>(sub));
                                     s.append("]");
                                 }
                                 s.append("]");
 
-                                output_data.addExportData(convert_key_to_string(key), s, true);
+                                output_data.addExportData(convert_key_to_string(key), std::unique_ptr<const CValue>(listing));
+                                // output_data.addExportData(convert_key_to_string(key), s, true);
                             }
                         }
                     }
@@ -390,21 +398,29 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                                 {
                                     uint32_t p = 0;
                                     std::string s;
+                                    // auto listing = std::make_unique<CListValue>();
+                                    auto listing = new CListValue();
                                     s.append("[");
                                     for (uint32_t i=0; i<samples; i++)
                                     {
                                         if (i>0) s.append(",");
                                         s.append("[");
+                                        auto sub = new CListValue();
+                                        // auto sub = std::make_unique<CListValue>();
                                         for (uint32_t j=0; j<elements; j++)
                                         {
                                             if (j>0) s.append(",");
-                                            s.append(std::to_string(f[p++]));
+                                            // s.append(std::to_string(f[p++]));
+                                            sub->addValue(std::make_unique<CLongValue>(f[p++]));
                                         }
                                         s.append("]");
+                                        // listing->addValue(sub);
+                                        listing->addValue(std::unique_ptr<const CValue>(sub));
                                     }
                                     s.append("]");
 
-                                    output_data.addExportData(convert_key_to_string(key), s, true);
+                                    output_data.addExportData(convert_key_to_string(key), std::unique_ptr<const CValue>(listing));
+                                    // output_data.addExportData(convert_key_to_string(key), s, true);
                                 }
                             }
                         }
@@ -440,19 +456,27 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                             uint32_t p = 0;
                             std::string s;
                             s.append("[");
+                            auto listing = new CListValue();
+                            // auto listing = std::make_unique<CListValue>();
                             for (uint32_t i=0; i<samples; i++)
                             {
                                 if (i>0) s.append(",");
                                 s.append("[");
+                                auto sub = new CListValue();
+                                // auto sub = std::make_unique<CListValue>();
                                 for (uint32_t j=0; j<elements; j++)
                                 {
                                     if (j>0) s.append(",");
-                                    s.append(std::to_string(f[p++]));
+                                    // s.append(std::to_string(f[p++]));
+                                    sub->addValue(std::make_unique<const CDoubleValue>(f[p++]));
                                 }
                                 s.append("]");
+                                listing->addValue(std::unique_ptr<const CValue>(sub));
+
                             }
                             s.append("]");
-                            output_data.addExportData(convert_key_to_string(key), s, true);
+                            output_data.addExportData(convert_key_to_string(key), std::unique_ptr<const CValue>(listing));
+                            // output_data.addExportData(convert_key_to_string(key), s, true);
                         }
                     }
                     else
@@ -487,7 +511,8 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                     s.append(1, data[p++]);
                     s.append(1, data[p++]);
 
-                    output_data.addExportData(convert_key_to_string(key), s);
+                    output_data.addExportData(convert_key_to_string(key), std::make_unique<CStringValue>(s));
+                    // output_data.addExportData(convert_key_to_string(key), s);
                 }
                 else if (type == GPMF_TYPE_COMPLEX)
                 {
@@ -510,10 +535,12 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                         uint32_t p = 0;
                         std::string s;
                         s.append("[");
+                        auto *listing = new CListValue();
                         for (uint32_t i = 0; i < samples; i++)
                         {
                             if (i>0) s.append(",");
                             s.append("[");
+                            auto sub = new CListValue();
                             for (uint32_t j = 0; j < elements; j++)
                             {
                                 if (j>0) s.append(",");
@@ -531,7 +558,9 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                                 }
                                 else if (output_data.st_type[j] != 'F')
                                 {
-                                    s.append(std::to_string(*ptr++));
+                                    // s.append(std::to_string(*ptr++));
+                                    sub->addValue(std::make_unique<const CDoubleValue>(*ptr++));
+
                                     PRINT_DEBUG("%.8f, ", *ptr++);
                                     pos += GPMF_SizeofType((GPMF_SampleType)output_data.st_type[j]);
                                 }
@@ -548,14 +577,23 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                                     s.append(std::string(1, data[pos+3]));
                                     s.append("\"");
 
+                                    std::string fs;
+                                    fs.append(std::string(1, data[pos]));
+                                    fs.append(std::string(1, data[pos+1]));
+                                    fs.append(std::string(1, data[pos+2]));
+                                    fs.append(std::string(1, data[pos+3]));
+
+                                    sub->addValue(std::make_unique<const CStringValue>(fs));
                                     pos += GPMF_SizeofType((GPMF_SampleType)output_data.st_type[j]);
                                 }
                             }
                             s.append("]");
+                            listing->addValue(std::unique_ptr<const CValue>(sub));
                         }
                         s.append("]");
 
-                        output_data.addExportData(convert_key_to_string(key), s, true);
+                        output_data.addExportData(convert_key_to_string(key), std::unique_ptr<const CValue>(listing));
+                        // output_data.addExportData(convert_key_to_string(key), s, true);
                     }
                     else
                     {
