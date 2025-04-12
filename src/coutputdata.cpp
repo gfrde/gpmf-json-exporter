@@ -126,44 +126,121 @@ std::string COutputData::buildJsonString()
         double timestep = (payload_out - payload_in) / export_data.size();
         int step = -1;
 
-        // first check, if there any of the entries needs to be exploded
+        // first check, if any of the entries needs to be exploded
+        std::size_t maxEntries = 0;
         for (const auto &s: export_data)
         {
-
-        }
-
-        //
-        for (const auto &s: export_data)
-        {
-            if (ignoreTypes.find(s.first) != ignoreTypes.end())
+            if (const auto listPtr = dynamic_cast<const CListValue*>(s.second.get()))
             {
-                continue;
+                maxEntries = std::max(maxEntries, listPtr->value.size());
             }
-            step ++;
+            else
+            {
+                maxEntries = std::max(maxEntries, 1ul);
+            }
+        }
+        // if (maxEntries > 0)
+        // {
+        //     toWrite.append(" !!! ");
+        // }
 
+        for (auto index=0; index<maxEntries; ++index)
+        {
             exportCounter ++;
-
             if (!json_as_stream && (!json_with_array || exportCounter > 1))
             {
                 toWrite.append(",");
             }
             toWrite.append("{");
 
+
             if (frames_per_sec > 0 )
             {
-                double t = timestamp + step*timestep;
+                double t = timestamp + index*timestep;
                 toWrite.append(this->buildJsonPart(static_cast<int64_t>(t), t / frames_per_sec));
             } else
             {
                 toWrite.append(this->buildJsonPart(static_cast<int64_t>(timestamp + step*timestep)));
             }
 
-            toWrite.append(",\"data\":");
-            toWrite.append(create_json_element(s.first, s.second->getAsJsonValue()));
-            // toWrite.append(s);
-            toWrite.append("}");
+            toWrite.append(",\"data\":[");
+
+            size_t step = 0;
+            for (const auto &s: export_data)
+            {
+                if (ignoreTypes.find(s.first) != ignoreTypes.end())
+                {
+                    continue;
+                }
+
+
+                // now write the main data
+                if (const auto listPtr = dynamic_cast<const CListValue*>(s.second.get()))
+                {
+                    step++;
+                    if (step != 1)
+                    {
+                        toWrite.append(",");
+                    }
+
+                    if (index < listPtr->value.size()-1)
+                    {
+                        const auto it = listPtr->value.begin();
+                        // for (size_t a=0; a<index; ++a, ++it)
+                        // {}
+
+                        // toWrite.append(create_json_element(s.first, it->get()->getAsJsonValue()));
+                        // toWrite.append(create_json_element(s.first, s.second->getAsJsonValue()));
+                        toWrite.append(create_json_element(s.first, "0"));
+                    }
+                }
+                else if (index == 0)
+                {
+                    step++;
+                    if (step != 1)
+                    {
+                        toWrite.append(",");
+                    }
+
+                    toWrite.append(create_json_element(s.first, s.second->getAsJsonValue()));
+                }
+            }
+            toWrite.append("]}");
             toWrite.append("\n");
         }
+
+        // //
+        // for (const auto &s: export_data)
+        // {
+        //     if (ignoreTypes.find(s.first) != ignoreTypes.end())
+        //     {
+        //         continue;
+        //     }
+        //     step ++;
+        //
+        //     exportCounter ++;
+        //
+        //     if (!json_as_stream && (!json_with_array || exportCounter > 1))
+        //     {
+        //         toWrite.append(",");
+        //     }
+        //     toWrite.append("{");
+        //
+        //     if (frames_per_sec > 0 )
+        //     {
+        //         double t = timestamp + step*timestep;
+        //         toWrite.append(this->buildJsonPart(static_cast<int64_t>(t), t / frames_per_sec));
+        //     } else
+        //     {
+        //         toWrite.append(this->buildJsonPart(static_cast<int64_t>(timestamp + step*timestep)));
+        //     }
+        //
+        //     toWrite.append(",\"data\":");
+        //     toWrite.append(create_json_element(s.first, s.second->getAsJsonValue()));
+        //     // toWrite.append(s);
+        //     toWrite.append("}");
+        //     toWrite.append("\n");
+        // }
     } else
     {
         exportCounter ++;
