@@ -16,6 +16,7 @@ std::string create_json_string(const std::string& attr, int32_t v);
 std::string create_json_string(const std::string& attr, double v);
 std::string create_json_string(const std::string& attr, const std::string& v);
 std::string create_json_element(const std::string& attr, const std::string& v);
+std::string create_json_object_entry(const std::string& attr, const std::string& v);
 
 
 #endif // HELPER_FUNCTIONS_H

@@ -36,6 +36,8 @@ public:
     bool split_data = false;
     double frames_per_sec=-1;
 
+    double timestamp_factor = 1000000;
+
 public:
     void reset_volatile();
     void addExportData(const std::string& key, const std::string& s, bool isJson=false);

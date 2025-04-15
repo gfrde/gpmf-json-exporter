@@ -33,6 +33,15 @@ public:
     long value;
 };
 
+class CUnsignedLongValue : public CValue {
+public:
+    explicit CUnsignedLongValue(unsigned long v);
+    std::string getAsJsonValue() const override;
+
+public:
+    unsigned long value;
+};
+
 class CLongLongValue : public CValue {
 public:
     explicit CLongLongValue(long long v);
@@ -40,6 +49,15 @@ public:
 
 public:
     long long value;
+};
+
+class CUnsignedLongLongValue : public CValue {
+public:
+    explicit CUnsignedLongLongValue(unsigned long long v);
+    std::string getAsJsonValue() const override;
+
+public:
+    unsigned long long value;
 };
 
 class CDoubleValue : public CValue {

@@ -44,3 +44,8 @@ std::string create_json_element(const std::string& attr, const std::string& v)
 {
     return "{\"" + attr + "\":" + v + "}";
 }
+
+std::string create_json_object_entry(const std::string& attr, const std::string& v)
+{
+    return "\"" + attr + "\":" + v;
+}

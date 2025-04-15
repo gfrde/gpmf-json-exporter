@@ -49,12 +49,34 @@ std::string CLongValue::getAsJsonValue() const
 }
 
 // ********************************************************************************************************************
+CUnsignedLongValue::CUnsignedLongValue(unsigned long v)
+{
+    this->value = v;
+}
+
+std::string CUnsignedLongValue::getAsJsonValue() const
+{
+    return std::to_string(value);
+}
+
+// ********************************************************************************************************************
 CLongLongValue::CLongLongValue(long long v)
 {
     this->value = v;
 }
 
 std::string CLongLongValue::getAsJsonValue() const
+{
+    return std::to_string(value);
+}
+
+// ********************************************************************************************************************
+CUnsignedLongLongValue::CUnsignedLongLongValue(unsigned long long v)
+{
+    this->value = v;
+}
+
+std::string CUnsignedLongLongValue::getAsJsonValue() const
 {
     return std::to_string(value);
 }

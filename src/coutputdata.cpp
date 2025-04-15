@@ -53,7 +53,7 @@ void COutputData::addExportData(const std::string& key, const uint64_t& s)
 {
     // export_data.push_back(s);
     // export_data[key] = std::to_string(s);
-    export_data[key] = std::make_unique<CLongLongValue>(s);
+    export_data[key] = std::make_unique<CUnsignedLongLongValue>(s);
 }
 void COutputData::addExportData(const std::string& key, const int64_t& s)
 {
@@ -65,7 +65,7 @@ void COutputData::addExportData(const std::string& key, const uint32_t& s)
 {
     // export_data.push_back(s);
     // export_data[key] = std::to_string(s);
-    export_data[key] = std::make_unique<CLongValue>(s);
+    export_data[key] = std::make_unique<CUnsignedLongValue>(s);
 }
 void COutputData::addExportData(const std::string& key, const int32_t& s)
 {
@@ -100,10 +100,10 @@ std::string COutputData::buildJsonPart(int64_t timestamp, double frame_pos) cons
     {
         toWrite.append(R"(,"frame":)").append(std::to_string(frame_pos));
     }
-    // if (!st_type.empty())
-    // {
-    //     toWrite.append(R"(,"st_type":")").append(st_type).append("\"");
-    // }
+    if (!st_type.empty())
+    {
+        toWrite.append(R"(,"st_type":")").append(st_type).append("\"");
+    }
     toWrite.append(R"(,"index":")").append(std::to_string(payload_index)).append("\"");
     if (payload_in >= 0)
     {
@@ -123,8 +123,6 @@ std::string COutputData::buildJsonString()
     std::string toWrite;
     if (this->split_data)
     {
-        double timestep = (payload_out - payload_in) / export_data.size();
-        int step = -1;
 
         // first check, if any of the entries needs to be exploded
         std::size_t maxEntries = 0;
@@ -139,10 +137,8 @@ std::string COutputData::buildJsonString()
                 maxEntries = std::max(maxEntries, 1ul);
             }
         }
-        // if (maxEntries > 0)
-        // {
-        //     toWrite.append(" !!! ");
-        // }
+        const double timestep = (payload_out - payload_in) / maxEntries;
+        // if (maxEntries > 0)  toWrite.append(" !!!=").append(std::to_string(timestep)).append("  ");
 
         for (auto index=0; index<maxEntries; ++index)
         {
@@ -154,16 +150,16 @@ std::string COutputData::buildJsonString()
             toWrite.append("{");
 
 
+            int64_t t = timestamp + static_cast<int64_t>(index*timestep * this->timestamp_factor);
             if (frames_per_sec > 0 )
             {
-                double t = timestamp + index*timestep;
-                toWrite.append(this->buildJsonPart(static_cast<int64_t>(t), t / frames_per_sec));
+                toWrite.append(this->buildJsonPart(t, t / frames_per_sec));
             } else
             {
-                toWrite.append(this->buildJsonPart(static_cast<int64_t>(timestamp + step*timestep)));
+                toWrite.append(this->buildJsonPart(t));
             }
 
-            toWrite.append(",\"data\":[");
+            toWrite.append(",\"data\":{");
 
             size_t step = 0;
             for (const auto &s: export_data)
@@ -173,25 +169,29 @@ std::string COutputData::buildJsonString()
                     continue;
                 }
 
+                const bool allowSplit = (!s.first.compare("SCAL") == 0);
+                const auto listPtr = dynamic_cast<const CListValue*>(s.second.get());
 
                 // now write the main data
-                if (const auto listPtr = dynamic_cast<const CListValue*>(s.second.get()))
+                if (allowSplit && listPtr)
                 {
-                    step++;
-                    if (step != 1)
+                    if (index < listPtr->value.size())
                     {
-                        toWrite.append(",");
-                    }
+                        step++;
+                        if (step != 1)
+                        {
+                            toWrite.append(",");
+                        }
 
-                    if (index < listPtr->value.size()-1)
-                    {
-                        const auto it = listPtr->value.begin();
-                        // for (size_t a=0; a<index; ++a, ++it)
-                        // {}
+                        // toWrite.append("\n").append(std::to_string(listPtr->value.size())).append("\n");
+                        // toWrite.append(s.second->getAsJsonValue()).append("\n");
+                        auto it = listPtr->value.begin();
+                        for (size_t a=0; a<index; ++a, ++it)
+                        {}
 
-                        // toWrite.append(create_json_element(s.first, it->get()->getAsJsonValue()));
+                        toWrite.append(create_json_object_entry(s.first, it->get()->getAsJsonValue()));
                         // toWrite.append(create_json_element(s.first, s.second->getAsJsonValue()));
-                        toWrite.append(create_json_element(s.first, "0"));
+                        // toWrite.append(create_json_element(s.first, "0"));
                     }
                 }
                 else if (index == 0)
@@ -202,10 +202,10 @@ std::string COutputData::buildJsonString()
                         toWrite.append(",");
                     }
 
-                    toWrite.append(create_json_element(s.first, s.second->getAsJsonValue()));
+                    toWrite.append(create_json_object_entry(s.first, s.second->getAsJsonValue()));
                 }
             }
-            toWrite.append("]}");
+            toWrite.append("}}");
             toWrite.append("\n");
         }
 

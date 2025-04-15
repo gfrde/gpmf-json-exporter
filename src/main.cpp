@@ -304,8 +304,10 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                     // printf("%lu", value_ul);
 
                     uint32_t num = samples * elements;
-                    int32_t f[num];
-                    ret = GPMF_ScaledData(ms, f, sizeof(f), 0, samples, GPMF_TYPE_SIGNED_LONG);
+                    // int32_t f[num];
+                    // ret = GPMF_ScaledData(ms, f, sizeof(f), 0, samples, GPMF_TYPE_SIGNED_LONG);
+                    double f[num];
+                    ret = GPMF_ScaledData(ms, f, sizeof(f), 0, samples, GPMF_TYPE_DOUBLE);
                     if (GPMF_OK == ret)
                     {
                         PRINT_DEBUG("(successful) ");
@@ -343,7 +345,8 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                                     {
                                         if (j>0) s.append(",");
                                         s.append(std::to_string(f[p++]));
-                                        sub->addValue(std::make_unique<CLongValue>(f[p++]));
+                                        sub->addValue(std::make_unique<CDoubleValue>(f[p++]));
+                                        // sub->addValue(std::make_unique<CLongValue>(f[p++]));
                                     }
                                     listing->addValue(std::unique_ptr<const CValue>(sub));
                                     s.append("]");
@@ -367,8 +370,10 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                     // printf("%lu", value_ul);
 
                     uint32_t num = samples * elements;
-                    uint32_t f[num];
-                    ret = GPMF_ScaledData(ms, f, sizeof(f), 0, samples, GPMF_TYPE_UNSIGNED_LONG);
+                    // uint32_t f[num];
+                    // ret = GPMF_ScaledData(ms, f, sizeof(f), 0, samples, GPMF_TYPE_UNSIGNED_LONG);
+                    double f[num];
+                    ret = GPMF_ScaledData(ms, f, sizeof(f), 0, samples, GPMF_TYPE_DOUBLE);
                     if (GPMF_OK == ret)
                     {
                         PRINT_DEBUG("(successful) ");
@@ -411,7 +416,8 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                                         {
                                             if (j>0) s.append(",");
                                             // s.append(std::to_string(f[p++]));
-                                            sub->addValue(std::make_unique<CLongValue>(f[p++]));
+                                            // sub->addValue(std::make_unique<CUnsignedLongValue>(f[p++]));
+                                            sub->addValue(std::make_unique<CDoubleValue>(f[p++]));
                                         }
                                         s.append("]");
                                         // listing->addValue(sub);
