@@ -7,17 +7,18 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <vector>
 
 
 class CValue {
 public:
-    virtual std::string getAsJsonValue() const;
+    virtual std::string getAsJsonValue(const std::vector<std::string> & attr_mapping) const;
 };
 
 class CStringValue : public CValue {
 public:
     explicit CStringValue(std::string v, bool useRaw=false);
-    std::string getAsJsonValue() const override;
+    std::string getAsJsonValue(const std::vector<std::string> & attr_mapping) const override;
 
 public:
     std::string value;
@@ -27,7 +28,7 @@ public:
 class CLongValue : public CValue {
 public:
     explicit CLongValue(long v);
-    std::string getAsJsonValue() const override;
+    std::string getAsJsonValue(const std::vector<std::string> & attr_mapping) const override;
 
 public:
     long value;
@@ -36,7 +37,7 @@ public:
 class CUnsignedLongValue : public CValue {
 public:
     explicit CUnsignedLongValue(unsigned long v);
-    std::string getAsJsonValue() const override;
+    std::string getAsJsonValue(const std::vector<std::string> & attr_mapping) const override;
 
 public:
     unsigned long value;
@@ -45,7 +46,7 @@ public:
 class CLongLongValue : public CValue {
 public:
     explicit CLongLongValue(long long v);
-    std::string getAsJsonValue() const override;
+    std::string getAsJsonValue(const std::vector<std::string> & attr_mapping) const override;
 
 public:
     long long value;
@@ -54,7 +55,7 @@ public:
 class CUnsignedLongLongValue : public CValue {
 public:
     explicit CUnsignedLongLongValue(unsigned long long v);
-    std::string getAsJsonValue() const override;
+    std::string getAsJsonValue(const std::vector<std::string> & attr_mapping) const override;
 
 public:
     unsigned long long value;
@@ -63,7 +64,7 @@ public:
 class CDoubleValue : public CValue {
 public:
     explicit CDoubleValue(double v);
-    std::string getAsJsonValue() const override;
+    std::string getAsJsonValue(const std::vector<std::string> & attr_mapping) const override;
 
 public:
     double value;
@@ -72,7 +73,7 @@ public:
 class CListValue : public CValue {
 public:
     explicit CListValue();
-    std::string getAsJsonValue() const override;
+    std::string getAsJsonValue(const std::vector<std::string> & attr_mapping) const override;
     void addValue(std::unique_ptr<const CValue> v);
 
 public:

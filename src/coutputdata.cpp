@@ -4,6 +4,7 @@
 
 #include "coutputdata.h"
 
+#include <algorithm>
 #include <ostream>
 #include <set>
 
@@ -13,6 +14,59 @@ extern bool json_as_stream;
 extern bool json_with_array;
 extern std::set<std::string> ignoreTypes;
 
+std::string to_lowercase(std::string str) {
+    std::transform(str.begin(), str.end(), str.begin(),
+        [](unsigned char c){ return std::tolower(c); });
+    return str;
+}
+
+
+std::vector<std::string> COutputData::get_dest_attributes() const
+{
+    std::vector<std::string> attr;
+    for (const auto &s: export_data)
+    {
+        if (s.first == "ORIN")
+        {
+            const CValue* v = s.second.get();
+            if (const auto strValue = dynamic_cast<const CStringValue*>(v))
+            {
+                const std::string& lowercase = to_lowercase(strValue->value);
+                for (char value : lowercase)
+                {
+                    attr.emplace_back(1, value);
+                }
+            }
+            break;
+        }
+
+        if (s.first == "GPS9")
+        {
+            attr.emplace_back("lat");
+            attr.emplace_back("lon");
+            attr.emplace_back("alt");
+            attr.emplace_back("speed_2d");
+            attr.emplace_back("speed_3d");
+            attr.emplace_back("days");
+            attr.emplace_back("secs");
+            attr.emplace_back("dop");
+            attr.emplace_back("fix");
+
+            break;
+        }
+
+        if (s.first == "GRAV")
+        {
+            attr.emplace_back("x");
+            attr.emplace_back("y");
+            attr.emplace_back("z");
+
+            break;
+        }
+    }
+
+    return attr;
+}
 
 void COutputData::reset_volatile()
 {
@@ -121,6 +175,8 @@ std::string COutputData::buildJsonPart(int64_t timestamp, double frame_pos) cons
 std::string COutputData::buildJsonString()
 {
     std::string toWrite;
+    const std::vector<std::string> attr_mapping =  get_dest_attributes();
+
     if (this->split_data)
     {
 
@@ -189,7 +245,7 @@ std::string COutputData::buildJsonString()
                         for (size_t a=0; a<index; ++a, ++it)
                         {}
 
-                        toWrite.append(create_json_object_entry(s.first, it->get()->getAsJsonValue()));
+                        toWrite.append(create_json_object_entry(s.first, it->get()->getAsJsonValue(attr_mapping)));
                         // toWrite.append(create_json_element(s.first, s.second->getAsJsonValue()));
                         // toWrite.append(create_json_element(s.first, "0"));
                     }
@@ -202,7 +258,7 @@ std::string COutputData::buildJsonString()
                         toWrite.append(",");
                     }
 
-                    toWrite.append(create_json_object_entry(s.first, s.second->getAsJsonValue()));
+                    toWrite.append(create_json_object_entry(s.first, s.second->getAsJsonValue(attr_mapping)));
                 }
             }
             toWrite.append("}}");
@@ -263,7 +319,7 @@ std::string COutputData::buildJsonString()
             }
             if (p>0) toWrite.append(",");
             p++;
-            toWrite.append(create_json_element(s.first, s.second->getAsJsonValue()));
+            toWrite.append(create_json_element(s.first, s.second->getAsJsonValue(attr_mapping)));
             // toWrite.append(s);
         }
 

@@ -39,6 +39,7 @@ public:
     double timestamp_factor = 1000000;
 
 public:
+    std::vector<std::string> get_dest_attributes() const;
     void reset_volatile();
     void addExportData(const std::string& key, const std::string& s, bool isJson=false);
     void addExportData(const std::string& key, const uint64_t& s);

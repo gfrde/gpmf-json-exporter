@@ -184,7 +184,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                 {
                     PRINT_DEBUG("  ");
                 }
-                PRINT_DEBUG("- struct size=%u - value=", ssize);
+                PRINT_DEBUG("- struct size=%u - type=%d - value=", ssize, type);
 
 
                 // ########################################################################
@@ -321,7 +321,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                         // GPMF_FormattedData(ms, f, sizeof(f), 0, samples);
                         for (uint32_t i=0; i<num; i++)
                         {
-                            PRINT_DEBUG(" %d", f[i]);
+                            PRINT_DEBUG(" %f", f[i]);
                         }
 
                         if (addToExportData)
@@ -344,7 +344,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                                     for (uint32_t j=0; j<elements; j++)
                                     {
                                         if (j>0) s.append(",");
-                                        s.append(std::to_string(f[p++]));
+                                        // s.append(std::to_string(f[p++]));
                                         sub->addValue(std::make_unique<CDoubleValue>(f[p++]));
                                         // sub->addValue(std::make_unique<CLongValue>(f[p++]));
                                     }
@@ -387,7 +387,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                         // GPMF_FormattedData(ms, f, sizeof(f), 0, samples);
                         for (uint32_t i=0; i<num; i++)
                         {
-                            PRINT_DEBUG(" %u", f[i]);
+                            PRINT_DEBUG(" %f", f[i]);
                         }
 
 
@@ -449,7 +449,7 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                         // GPMF_FormattedData(ms, f, sizeof(f), 0, samples);
                         for (uint32_t i=0; i<num; i++)
                         {
-                            PRINT_DEBUG(" %f", f[i]);
+                            PRINT_DEBUG("! %f", f[i]);
                         }
 
 
@@ -564,10 +564,11 @@ GPMF_ERR readMP4File(char* filename, bool export_filename)
                                 }
                                 else if (output_data.st_type[j] != 'F')
                                 {
+                                    double d = *ptr++;
                                     // s.append(std::to_string(*ptr++));
-                                    sub->addValue(std::make_unique<const CDoubleValue>(*ptr++));
+                                    sub->addValue(std::make_unique<const CDoubleValue>(d));
 
-                                    PRINT_DEBUG("%.8f, ", *ptr++);
+                                    PRINT_DEBUG("%.8f, ", d);
                                     pos += GPMF_SizeofType((GPMF_SampleType)output_data.st_type[j]);
                                 }
                                 else if (type_samples && output_data.st_type[j] == GPMF_TYPE_FOURCC)
