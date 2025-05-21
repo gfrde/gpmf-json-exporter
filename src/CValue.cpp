@@ -100,7 +100,16 @@ std::string CListValue::getAsJsonValue(const std::vector<std::string> & attr_map
 {
     int pos = 0;
     std::string res;
-    attr_mapping.empty() ? res += "[" : res += "{";
+
+    if (value.empty())
+    {
+        return "[]";
+    }
+
+    // if this list contains sublists, do not apply attribute-mapping
+    const bool isLastList = dynamic_cast<const CListValue*>(value.begin()->get()) == nullptr;
+
+    (!isLastList || attr_mapping.empty()) ? res += "[" : res += "{";
     // res += "[";
     for (auto && v : value)
     {
@@ -108,14 +117,14 @@ std::string CListValue::getAsJsonValue(const std::vector<std::string> & attr_map
         {
             res += ",";
         }
-        if (pos < attr_mapping.size())
+        if (isLastList && pos < attr_mapping.size())
         {
         res += "\"" + attr_mapping[pos] + "\":";
         }
         res += v->getAsJsonValue(attr_mapping);;
         pos++;
     }
-    attr_mapping.empty() ? res += "]" : res += "}";
+    (!isLastList || attr_mapping.empty()) ? res += "]" : res += "}";
     // res += "]";
     return res;
 }
